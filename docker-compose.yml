@@ -1,9 +1,11 @@
 version: '3'
 services:
-  leafy-postgres:
-    image: sha256:2f8c8a2c44f0ff507edfa9a05512fba9beb78994fccaf742f198e21b748cb5d5
+  leafy-postgresql:
+    image: sungjunlee2000/leafy-postgresql:latest
     volumes:
       - mydata:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"  # 외부에서 접근하려면 포트를 매핑합니다.
     deploy:
       resources:
         limits:
@@ -15,22 +17,23 @@ services:
     build: ./leafy-backend
     image: leafy-backend:5.0.0-compose
     environment:
-      - DB_URL=leafy-postgres
+      - DB_URL=postgres://myuser:mypassword@leafy-postgresql:5432/mydb
     depends_on:
-      - leafy-postgres
+      - leafy-postgresql
     deploy:
       resources:
         limits:
           cpus: '1.5'
           memory: 512M
     restart: on-failure
-      
+
   leafy-front:
-    image: sha256:2f8c8a2c44f0ff507edfa9a05512fba9beb78994fccaf742f198e21b748cb5d5
+    build: ./leafy-frontend
+    image: sungjunlee2000/leafy-frontend:latest
     environment:
       - BACKEND_HOST=leafy-backend
     ports:
-      - 80:80
+      - "80:80"
     depends_on:
       - leafy-backend
     deploy:
